@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { User, MapPin, Phone, Calendar, Droplet, Heart, Weight, FileText } from 'lucide-react';
+import axios from "axios";
 
 export function Donate() {
   const [formData, setFormData] = useState({
@@ -25,10 +26,30 @@ export function Donate() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Donation form submitted:', formData);
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    const response = await axios.post("http://localhost:5000/api/donors", formData);
+    alert("✅ Donor registered successfully!");
+    setFormData({
+      firstName: "",
+      lastName: "",
+      address: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      phone: "",
+      bloodGroup: "",
+      age: "",
+      weight: "",
+      lastDonation: "",
+      medicalConditions: ""
+    });
+  } catch (error) {
+    alert("❌ Failed to register donor. Please try again.");
+    console.error(error);
+  }
+};
 
   return (
     <div className="min-h-screen" style={{ background: 'radial-gradient(circle at 0% 0%, #dfd9db, #830200)' }}>

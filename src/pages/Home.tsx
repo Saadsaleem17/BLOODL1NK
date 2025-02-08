@@ -1,10 +1,11 @@
-import React from 'react';
-import { Heart, Search } from 'lucide-react';
+import React, { useState } from 'react';
+import { Heart, Search, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { ChatBot } from '../components/ChatBot';
+import ChatBot from '../components/ChatBot';  // ✅ Ensure correct import
 
 export function Home() {
   const navigate = useNavigate();
+  const [isChatOpen, setIsChatOpen] = useState(false);  // ✅ State for chatbot visibility
 
   return (
     <>
@@ -23,13 +24,14 @@ export function Home() {
               src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&q=80&w=1600"
               alt="Blood Donation Center"
               className="rounded-lg shadow-xl mx-auto max-w-full h-auto"
-            />https://i.ytimg.com/vi/BsmFXVA1Vmw/maxresdefault.jpg
+            />
           </div>
         </div>
       </main>
 
       {/* Floating Action Buttons */}
-      <div className="fixed bottom-8 right-8 flex flex-col space-y-4">
+      <div className="fixed bottom-8 left-8 flex flex-col space-y-4">
+        {/* Donate Button */}
         <button
           onClick={() => navigate('/donate')}
           className="px-6 py-3 bg-red-600 text-white hover:bg-red-700 font-medium rounded-full shadow-lg flex items-center"
@@ -37,6 +39,8 @@ export function Home() {
           <Heart className="h-5 w-5 mr-2" />
           Donate
         </button>
+
+        {/* Find Donor Button */}
         <button
           onClick={() => navigate('/find-donor')}
           className="px-6 py-3 bg-white text-red-600 hover:bg-gray-50 font-medium rounded-full shadow-lg border-2 border-red-600 flex items-center"
@@ -44,10 +48,19 @@ export function Home() {
           <Search className="h-5 w-5 mr-2" />
           Find a Donor
         </button>
+
+        {/* ChatBot Toggle Button */}
+        <button
+          onClick={() => setIsChatOpen(true)}
+          className="px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 font-medium rounded-full shadow-lg flex items-center"
+        >
+          <MessageCircle className="h-5 w-5 mr-2" />
+          Chat
+        </button>
       </div>
 
-      {/* Chatbot */}
-      <ChatBot />
+      {/* ChatBot Component (Shown Only When isChatOpen is True) */}
+      {isChatOpen && <ChatBot onClose={() => setIsChatOpen(false)} />}
     </>
   );
 }
