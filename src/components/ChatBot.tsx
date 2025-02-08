@@ -1,166 +1,124 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, X, Minimize2, Maximize2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
+import { X, Send } from 'lucide-react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// Initialize Gemini API
+const genAI = new GoogleGenerativeAI('AIzaSyDJ_1NN0wod4DMW1kpx3Bnn7O5bKdJsaDw');
+const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+interface ChatBotProps {
+  onClose: () => void;
+}
 
 interface Message {
   text: string;
-  isBot: boolean;
-  timestamp: Date;
+  isUser: boolean;
 }
 
-export function ChatBot() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
+const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
   const [messages, setMessages] = useState<Message[]>([
-    {
-      text: "Hey, how can I help you?",
-      isBot: true,
-      timestamp: new Date()
+    { 
+      text: "Hello! I'm your BLOODL1NK assistant. I can help you with blood donation, finding blood donors, and answering questions about blood types and donation eligibility. How can I assist you today?",
+      isUser: false 
     }
   ]);
-  const [inputMessage, setInputMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const handleSendMessage = async () => {
+    if (!input.trim() || isLoading) return;
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputMessage.trim()) return;
+    const userMessage = input.trim();
+    setInput('');
+    setIsLoading(true);
 
     // Add user message
-    const userMessage: Message = {
-      text: inputMessage,
-      isBot: false,
-      timestamp: new Date()
-    };
-    setMessages(prev => [...prev, userMessage]);
-    setInputMessage('');
+    setMessages(prev => [...prev, { text: userMessage, isUser: true }]);
 
-    // Simulate bot response (replace with actual API call)
-    setTimeout(() => {
-      const botResponse: Message = {
-        text: "I'm a demo bot. In production, I would connect to an AI service to provide real responses about blood donation.",
-        isBot: true,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, botResponse]);
-    }, 1000);
-  };
+    try {
+      // Prepare context for the AI
+      const prompt = `You are a helpful assistant for BLOODL1NK, a blood bank system. You help users with blood donation, finding donors, and answering questions about blood types and donation eligibility. 
+      
+      Current conversation:
+      ${messages.map(m => `${m.isUser ? 'User' : 'Assistant'}: ${m.text}`).join('\n')}
+      
+      User: ${userMessage}
+      
+      Provide a helpful, accurate, and concise response. Focus on blood donation related information.`;
 
-  const toggleChat = () => {
-    if (!isOpen) {
-      setIsMinimized(false);
+      // Get response from Gemini
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+
+      // Add AI response
+      setMessages(prev => [...prev, { text, isUser: false }]);
+    } catch (error) {
+      console.error('Error getting response from Gemini:', error);
+      setMessages(prev => [...prev, { 
+        text: "I apologize, but I'm having trouble connecting to the AI service. Please try again later.", 
+        isUser: false 
+      }]);
+    } finally {
+      setIsLoading(false);
     }
-    setIsOpen(!isOpen);
-  };
-
-  const toggleMinimize = () => {
-    setIsMinimized(!isMinimized);
   };
 
   return (
-    <div className="fixed bottom-8 left-8 z-50">
-      {/* Chat Toggle Button */}
-      <button
-        onClick={toggleChat}
-        className="bg-red-600 hover:bg-red-700 text-white rounded-full p-3 shadow-lg flex items-center justify-center transition-all duration-200 ease-in-out"
-      >
-        <Bot className="h-6 w-6" />
-      </button>
+    <div className="fixed bottom-24 right-8 w-96 h-[500px] bg-white rounded-lg shadow-xl flex flex-col">
+      <div className="p-4 bg-red-600 text-white rounded-t-lg flex justify-between items-center">
+        <h3 className="font-semibold">BLOODL1NK Assistant</h3>
+        <button onClick={onClose} className="hover:bg-red-700 p-1 rounded">
+          <X size={20} />
+        </button>
+      </div>
 
-      {/* Chat Window */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ 
-              opacity: 1, 
-              y: 0,
-              height: isMinimized ? 'auto' : '500px'
-            }}
-            exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-20 left-0 w-96 bg-white rounded-lg shadow-xl overflow-hidden"
+      <div className="flex-1 p-4 overflow-y-auto space-y-4">
+        {messages.map((msg, idx) => (
+          <div
+            key={idx}
+            className={`${
+              msg.isUser ? 'ml-auto bg-red-600 text-white' : 'mr-auto bg-gray-100 text-gray-800'
+            } p-3 rounded-lg max-w-[80%]`}
           >
-            {/* Chat Header */}
-            <div className="bg-red-600 text-white p-4 flex justify-between items-center">
-              <div className="flex items-center space-x-2">
-                <Bot className="h-6 w-6" />
-                <span className="font-medium">BLOODL1NK Assistant</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button 
-                  onClick={toggleMinimize}
-                  className="hover:bg-red-700 rounded p-1"
-                >
-                  {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
-                </button>
-                <button 
-                  onClick={toggleChat}
-                  className="hover:bg-red-700 rounded p-1"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+            {msg.text}
+          </div>
+        ))}
+        {isLoading && (
+          <div className="mr-auto bg-gray-100 text-gray-800 p-3 rounded-lg">
+            <div className="flex space-x-2">
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
             </div>
-
-            {!isMinimized && (
-              <>
-                {/* Chat Messages */}
-                <div className="h-96 overflow-y-auto p-4 space-y-4">
-                  {messages.map((message, index) => (
-                    <div
-                      key={index}
-                      className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
-                    >
-                      <div
-                        className={`max-w-[80%] p-3 rounded-lg ${
-                          message.isBot
-                            ? 'bg-gray-100 text-gray-800'
-                            : 'bg-red-600 text-white'
-                        }`}
-                      >
-                        <p className="text-sm">{message.text}</p>
-                        <p className="text-xs mt-1 opacity-70">
-                          {message.timestamp.toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {/* Chat Input */}
-                <form onSubmit={handleSendMessage} className="p-4 border-t">
-                  <div className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      placeholder="Type your message..."
-                      className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                    />
-                    <button
-                      type="submit"
-                      className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 transition-colors"
-                    >
-                      <Send className="h-5 w-5" />
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
+
+      <div className="p-4 border-t">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            placeholder="Type your message..."
+            className="flex-1 p-2 border rounded-lg focus:outline-none focus:border-red-600"
+            disabled={isLoading}
+          />
+          <button
+            onClick={handleSendMessage}
+            className={`p-2 ${
+              isLoading ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700'
+            } text-white rounded-lg transition-colors`}
+            disabled={isLoading}
+          >
+            <Send size={20} />
+          </button>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default ChatBot;
