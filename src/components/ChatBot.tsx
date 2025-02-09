@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, Send } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import axios from "axios";
+
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI('AIzaSyDJ_1NN0wod4DMW1kpx3Bnn7O5bKdJsaDw');
@@ -26,43 +28,23 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+  if (!input.trim() || isLoading) return;
 
-    const userMessage = input.trim();
-    setInput('');
-    setIsLoading(true);
+  const userMessage = input.trim();
+  setInput('');
+  setIsLoading(true);
+  setMessages(prev => [...prev, { text: userMessage, isUser: true }]);
 
-    // Add user message
-    setMessages(prev => [...prev, { text: userMessage, isUser: true }]);
-
-    try {
-      // Prepare context for the AI
-      const prompt = `You are a helpful assistant for BLOODL1NK, a blood bank system. You help users with blood donation, finding donors, and answering questions about blood types and donation eligibility. 
-      
-      Current conversation:
-      ${messages.map(m => `${m.isUser ? 'User' : 'Assistant'}: ${m.text}`).join('\n')}
-      
-      User: ${userMessage}
-      
-      Provide a helpful, accurate, and concise response. Focus on blood donation related information.`;
-
-      // Get response from Gemini
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-
-      // Add AI response
-      setMessages(prev => [...prev, { text, isUser: false }]);
-    } catch (error) {
-      console.error('Error getting response from Gemini:', error);
-      setMessages(prev => [...prev, { 
-        text: "I apologize, but I'm having trouble connecting to the AI service. Please try again later.", 
-        isUser: false 
-      }]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    const response = await axios.post("http://localhost:5000/api/chatbot", { message: userMessage });
+    setMessages(prev => [...prev, { text: response.data.response, isUser: false }]);
+  } catch (error) {
+    console.error("Error fetching chatbot response:", error);
+    setMessages(prev => [...prev, { text: "Sorry, I couldn't process your request.", isUser: false }]);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="fixed bottom-24 right-8 w-96 h-[500px] bg-white rounded-lg shadow-xl flex flex-col">
