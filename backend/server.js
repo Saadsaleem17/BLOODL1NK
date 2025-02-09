@@ -2,6 +2,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
+const fs = require('fs');
+const { PDFDocument, rgb } = require('pdf-lib');
+const nodemailer = require('nodemailer');
 
 const app = express();
 app.use(cors());
@@ -47,9 +50,8 @@ app.post("/api/donors", async (req, res) => {
 });
 
 // Start Server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
 
 app.get("/api/donors", async (req, res) => {
   try {
@@ -64,7 +66,6 @@ app.get("/api/donors", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch donors" });
   }
 });
-
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -117,4 +118,56 @@ app.post("/api/chatbot", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// Configure Email Service
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: { user: 'your-email@gmail.com', pass: 'your-email-password' },
+});
+
+// Function to Modify Certificate
+const generateCertificate = async (name, date) => {
+  const existingPdfBytes = fs.readFileSync('certificate_template.pdf'); // Your Template
+  const pdfDoc = await PDFDocument.load(existingPdfBytes);
+  const pages = pdfDoc.getPages();
+  const firstPage = pages[0];
+
+  firstPage.drawText(name, {
+    x: 200, y: 300, size: 24, color: rgb(0, 0, 0),
+  });
+
+  firstPage.drawText(date, {
+    x: 200, y: 250, size: 18, color: rgb(0, 0, 0),
+  });
+
+  const modifiedPdfBytes = await pdfDoc.save();
+  const filePath = `certificates/${name.replace(' ', '_')}.pdf`;
+  fs.writeFileSync(filePath, modifiedPdfBytes);
+  return filePath;
+};
+
+// Route to Generate and Email Certificate
+app.post('/generate-certificate', async (req, res) => {
+  const { name, email } = req.body;
+  const date = new Date().toLocaleDateString();
+
+  try {
+    const filePath = await generateCertificate(name, date);
+
+    // Send Email with Certificate
+    await transporter.sendMail({
+      from: 'your-email@gmail.com',
+      to: email,
+      subject: 'Your Blood Donation Certificate',
+      text: `Dear ${name},\n\nThank you for donating blood! Your certificate is attached.\n\nBest Regards,\nBlood Donation Team`,
+      attachments: [{ filename: 'certificate.pdf', path: filePath }],
+    });
+
+    res.status(200).json({ message: 'Certificate sent!' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error generating certificate', error });
+  }
+});
+
+app.listen(5001, () => console.log('Server running on port 5001'));
 

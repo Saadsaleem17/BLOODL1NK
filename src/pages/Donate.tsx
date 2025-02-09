@@ -19,6 +19,9 @@ export function Donate() {
     medicalConditions: ''
   });
 
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
@@ -27,29 +30,44 @@ export function Donate() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    const response = await axios.post("http://localhost:5000/api/donors", formData);
-    alert("✅ Donor registered successfully!");
-    setFormData({
-      firstName: "",
-      lastName: "",
-      address: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      phone: "",
-      bloodGroup: "",
-      age: "",
-      weight: "",
-      lastDonation: "",
-      medicalConditions: ""
+    e.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:5000/api/donors", formData);
+      alert("✅ Donor registered successfully!");
+      setFormData({
+        firstName: "",
+        lastName: "",
+        address: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        phone: "",
+        bloodGroup: "",
+        age: "",
+        weight: "",
+        lastDonation: "",
+        medicalConditions: ""
+      });
+    } catch (error) {
+      alert("❌ Failed to register donor. Please try again.");
+      console.error(error);
+    }
+  };
+
+  const handleCertificateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const response = await fetch('http://localhost:5000/generate-certificate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email }),
     });
-  } catch (error) {
-    alert("❌ Failed to register donor. Please try again.");
-    console.error(error);
-  }
-};
+
+    if (response.ok) {
+      alert('Certificate has been sent to your email!');
+    } else {
+      alert('Error generating certificate.');
+    }
+  };
 
   return (
     <div className="min-h-screen" style={{ background: 'radial-gradient(circle at 0% 0%, #dfd9db, #830200)' }}>
@@ -256,6 +274,31 @@ export function Donate() {
               Register as Donor
             </button>
           </form>
+
+          <div className="mt-10">
+            <h2 className="text-2xl font-bold text-center">Donate Blood & Get a Certificate</h2>
+            <form onSubmit={handleCertificateSubmit} className="mt-5 space-y-4">
+              <input
+                type="text"
+                placeholder="Enter your name"
+                className="border p-2 w-full"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="border p-2 w-full"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded">
+                Submit & Get Certificate
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
