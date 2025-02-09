@@ -74,7 +74,7 @@ npm start
 ---
 
 ## 👥 Team Innov8ors
-- **Saad Salim** (Leader)
+- **Saad Salim** (Lead)
 - **Mridul Raj Gupta**
 - **Prince Goyal**
 - **Rishabh Sharma**
