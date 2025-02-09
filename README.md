@@ -1,4 +1,4 @@
-iptypeDSc# 🩸 BLOODL1NK - A Smart Blood Bank Management System
+# 🩸 BLOODL1NK - A Smart Blood Bank Management System
 
 > 🚀 **Connecting Donors, Hospitals, and Patients Seamlessly**
 
@@ -20,7 +20,7 @@ BloodL1nk is a cutting-edge blood bank management system designed to streamline 
 ---
 
 ## ⚙️ Tech Stack
-- **Frontend:** React.js , TypeScript.js
+- **Frontend:** TypeScript.js
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB
 - **AI Integration:** Gemini (AI Chatbot)
