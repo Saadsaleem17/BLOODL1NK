@@ -21,7 +21,7 @@ export function Home() {
           </p>
           <div className="mt-10">
             <img
-              src="https://www.eternalhospital.com/uploadedfiles/gallery/1718272629_Blogs_1300-x-700_Blood-Donation.jpg"
+              src="https://www.citypng.com/public/uploads/preview/blood-donate-illustration-design-sign-logo-png-704081694693639fiubls9faq.png"
               alt="Blood Donation"
               className="rounded-lg shadow-xl mx-auto max-w-full h-auto"
             />
