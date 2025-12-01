@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Heart, Search, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ChatBot from '../components/ChatBot';  // ✅ Ensure correct import
+import bloodDonation from '../components/blood_donation.jpg'
 
 export function Home() {
   const navigate = useNavigate();
@@ -21,9 +22,9 @@ export function Home() {
           </p>
           <div className="mt-10">
             <img
-              src="src/components/blood_donation.jpg"
-              alt="Blood Donation"
-              className="rounded-lg shadow-xl mx-auto max-w-full h-auto"
+               src={bloodDonation}
+               alt="Blood Donation"
+               className="rounded-lg shadow-xl mx-auto max-w-full h-auto"
             />
           </div>
         </div>
