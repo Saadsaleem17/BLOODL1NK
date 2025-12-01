@@ -21,7 +21,7 @@ export function Home() {
           </p>
           <div className="mt-10">
             <img
-              src=""
+              src="src/components/blood_donation.jpg"
               alt="Blood Donation"
               className="rounded-lg shadow-xl mx-auto max-w-full h-auto"
             />
