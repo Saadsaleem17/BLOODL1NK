@@ -21,7 +21,7 @@ export function Home() {
           </p>
           <div className="mt-10">
             <img
-              src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Ffree-photos-vectors%2Fblood-donation-banner&psig=AOvVaw0S1FHGNiL63FZGV0m1Vaht&ust=1764689195899000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCLCY8eLZnJEDFQAAAAAdAAAAABAE"
+              src=""
               alt="Blood Donation"
               className="rounded-lg shadow-xl mx-auto max-w-full h-auto"
             />
